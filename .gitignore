@@ -1,0 +1,48 @@
+# ---- AI / editor tooling ----
+.claude/
+CLAUDE.md
+.mcp.json
+.ripgreprc
+.idea
+.vscode
+*.iml
+
+# ---- Personal shell / git config (should never be in repo) ----
+.bashrc
+.bash_profile
+.profile
+.zshrc
+.zprofile
+.gitconfig
+
+# ---- Presentation / proposal files ----
+*.ppt
+*.pptx
+*.key
+Proposals.pdf
+
+# ---- Android / Gradle build ----
+.gradle/
+.kotlin/
+build/
+*/build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+output-metadata.json
+
+# ---- Local config / secrets ----
+local.properties
+*.jks
+*.keystore
+google-services.json
+
+# ---- Logs / OS junk ----
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
