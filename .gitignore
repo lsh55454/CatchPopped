@@ -1,13 +1,11 @@
-# ---- AI / editor tooling ----
+# IDE / local tools
+.idea
+.vscode
+*.iml
 .claude/
 CLAUDE.md
 .mcp.json
 .ripgreprc
-.idea
-.vscode
-*.iml
-
-# ---- Personal shell / git config (should never be in repo) ----
 .bashrc
 .bash_profile
 .profile
@@ -15,13 +13,23 @@ CLAUDE.md
 .zprofile
 .gitconfig
 
-# ---- Presentation / proposal files ----
+# Docs not for submission
 *.ppt
 *.pptx
 *.key
 Proposals.pdf
+docs/TermProjectIntro.pdf
+docs/PLAN.md
+docs/IMPLEMENTATION.md
 
-# ---- Android / Gradle build ----
+# On-device model files
+*.task
+*.gguf
+*.tflite
+*.litertlm
+models/
+
+# Android / Gradle build
 .gradle/
 .kotlin/
 build/
@@ -35,13 +43,13 @@ captures/
 *.dex
 output-metadata.json
 
-# ---- Local config / secrets ----
+# Local config / secrets
 local.properties
 *.jks
 *.keystore
 google-services.json
 
-# ---- Logs / OS junk ----
+# Logs / OS
 *.log
 .DS_Store
 Thumbs.db
