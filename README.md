@@ -4,7 +4,6 @@ Ideas pop up while walking, showering, or falling asleep — and they disappear 
 CatchPopped lets you **speak an idea once** and turns the recording into **a one-page proposal document**, entirely **on-device**.
 
 Team **Mochigalbi Brown** — Seunghyeon Lee, Myeonghak Lee
-POSTECH CSE Mobile & Ubiquitous Computing, Term Project
 
 ## How it works
 
@@ -72,6 +71,7 @@ Body text is Korean; key terms are kept in English.
 - [ ] P6 Polish, demo, report
 - [ ] Final presentation + live demo (Dec 21 / 23)
 
+Details on implementation: [IMPLEMENTATION.md](docs/IMPLEMENTATION.md)
 Future work: merging related ideas into one document.
 
 ## Build
