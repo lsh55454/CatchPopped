@@ -12,6 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.mochigalbi.catchpopped.ui.detail.DetailScreen
+import com.mochigalbi.catchpopped.ui.settings.SettingsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,20 +22,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(modifier = Modifier.padding(innerPadding))
+                    DetailScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
     }
 }
 
-@Composable
-fun Greeting(modifier: Modifier = Modifier) {
-    Text(text = "CatchPopped", modifier = modifier)
-}
+
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    MaterialTheme { Greeting() }
+    MaterialTheme { SettingsScreen(onBack = {}) }
 }
