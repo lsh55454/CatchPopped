@@ -5,6 +5,8 @@ CatchPopped lets you **speak an idea once** and turns the recording into **a one
 
 Team **Mochigalbi Brown** — Seunghyeon Lee, Myeonghak Lee
 
+Writing code lines is assisted by Claude Code.
+
 ## How it works
 
 ```
