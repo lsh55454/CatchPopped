@@ -17,9 +17,7 @@ CLAUDE.md
 *.ppt
 *.pptx
 *.key
-Proposals.pdf
-docs/TermProjectIntro.pdf
-docs/PLAN.md
+docs/Private/
 
 # On-device model files
 *.task
