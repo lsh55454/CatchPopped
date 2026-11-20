@@ -63,7 +63,7 @@ Body text is Korean; key terms are kept in English.
 ## Roadmap
 
 - [x] Proposal (Oct 19)
-- [ ] P0 Project skeleton: navigation, database, theme
+- [x] P0 Project skeleton: navigation, database, theme
 - [ ] P1 Recording (foreground service, WAV) + denoising
 - [ ] P2 Speech-to-text: SpeechRecognizer, whisper.cpp
 - [ ] P3 Local LLM summary + processing pipeline

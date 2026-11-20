@@ -147,7 +147,7 @@ interface Summarizer { suspend fun summarize(input: SummaryInput, onToken: (Stri
 
 ## 11. 남은 준비
 
-- [ ] S21 Android 버전 확인
+- [x] S21 Android 버전 확인 (One UI 7.0, Android 15)
 - [ ] NDK, CMake 설치 (SDK Manager)
 - [ ] whisper.cpp 소스 → `third_party/whisper.cpp`
 - [ ] Whisper 모델 (tiny 약 75MB, base 약 142MB, small 약 466MB)
