@@ -2,6 +2,7 @@ package com.mochigalbi.catchpopped.ui.record
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.SystemClock
 import android.speech.SpeechRecognizer
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -107,8 +108,17 @@ private fun LiveRecording(onDone: () -> Unit) {
             if (text.isNotEmpty()) {
                 val now = System.currentTimeMillis()
                 repository.add(
-                    Idea(id = now, createdAt = now, durationMs = elapsedMs, transcript = text)
+                    Idea(
+                        id = now,
+                        createdAt = now,
+                        durationMs = elapsedMs,
+                        transcript = text,
+                        transcriptSource = "실시간",
+                    )
                 )
+                if (AppSettings.get(context).llmModel.value != null) {
+                    IdeaProcessor.get(context).document(now)
+                }
             }
             onDone()
         },
@@ -160,6 +170,20 @@ private fun FileRecording(onDone: () -> Unit) {
 
     var started by remember { mutableStateOf<Boolean?>(null) }
     var elapsedMs by remember { mutableLongStateOf(0L) }
+
+    // Lets the background transcription show its notification. Refusing is fine:
+    // transcription still runs, only the notification is hidden.
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     DisposableEffect(Unit) {
         onDispose {

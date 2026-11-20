@@ -34,7 +34,8 @@ import androidx.compose.ui.unit.dp
 import com.mochigalbi.catchpopped.settings.AppSettings
 import com.mochigalbi.catchpopped.settings.RecordMode
 import com.mochigalbi.catchpopped.settings.SttEngine
-import com.mochigalbi.catchpopped.stt.WhisperModels
+import com.mochigalbi.catchpopped.models.ModelFiles
+import com.mochigalbi.catchpopped.models.ModelKind
 import com.mochigalbi.catchpopped.stt.WhisperNative
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -104,16 +105,42 @@ fun SettingsScreen(onBack: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
             WhisperSection(settings)
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(text = "문서 생성 모델", style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = "모델을 고르면 받아쓰기가 끝난 뒤 자동으로 문서를 만듭니다.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        val llmModel by settings.llmModel.collectAsState()
+        ModeRow(
+            selected = llmModel == null,
+            title = "사용 안 함",
+            description = "전사본만 저장합니다.",
+            onClick = { settings.setLlmModel(null) },
+        )
+        ModelPicker(
+            kind = ModelKind.LLM,
+            selected = llmModel,
+            emptyHint = "Gemma .task 파일을 휴대폰에 받은 뒤 가져오세요.",
+            onSelect = { settings.setLlmModel(it) },
+        )
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
+/** Lists imported model files of one [kind] as choices, with an import button. */
 @Composable
-private fun WhisperSection(settings: AppSettings) {
+private fun ModelPicker(
+    kind: ModelKind,
+    selected: String?,
+    emptyHint: String,
+    onSelect: (String) -> Unit,
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val selectedModel by settings.whisperModel.collectAsState()
-    val language by settings.whisperLanguage.collectAsState()
-    var models by remember { mutableStateOf(WhisperModels.list(context)) }
+    var models by remember { mutableStateOf(ModelFiles.list(context, kind)) }
     var importStatus by remember { mutableStateOf<String?>(null) }
     var importing by remember { mutableStateOf(false) }
 
@@ -122,11 +149,11 @@ private fun WhisperSection(settings: AppSettings) {
         importing = true
         scope.launch {
             importStatus = try {
-                val file = WhisperModels.import(context, uri) { copied ->
+                val file = ModelFiles.import(context, uri, kind) { copied ->
                     importStatus = "가져오는 중… ${copied / (1 shl 20)}MB"
                 }
-                models = WhisperModels.list(context)
-                if (settings.whisperModel.value == null) settings.setWhisperModel(file.name)
+                models = ModelFiles.list(context, kind)
+                if (selected == null) onSelect(file.name)
                 "가져왔습니다: ${file.name}"
             } catch (e: CancellationException) {
                 throw e
@@ -138,20 +165,19 @@ private fun WhisperSection(settings: AppSettings) {
         }
     }
 
-    Text(text = "Whisper 모델", style = MaterialTheme.typography.titleSmall)
     if (models.isEmpty()) {
         Text(
-            text = "모델이 없습니다. ggml-….bin 파일을 휴대폰에 받은 뒤 가져오세요.",
+            text = "모델이 없습니다. $emptyHint",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
     for (model in models) {
         ModeRow(
-            selected = model.name == selectedModel,
-            title = WhisperModels.label(model.name),
+            selected = model.name == selected,
+            title = ModelFiles.label(model.name),
             description = "${model.length() / (1 shl 20)}MB",
-            onClick = { settings.setWhisperModel(model.name) },
+            onClick = { onSelect(model.name) },
         )
     }
     OutlinedButton(enabled = !importing, onClick = { picker.launch(arrayOf("*/*")) }) {
@@ -160,6 +186,20 @@ private fun WhisperSection(settings: AppSettings) {
     importStatus?.let {
         Text(text = it, style = MaterialTheme.typography.bodySmall)
     }
+}
+
+@Composable
+private fun WhisperSection(settings: AppSettings) {
+    val selectedModel by settings.whisperModel.collectAsState()
+    val language by settings.whisperLanguage.collectAsState()
+
+    Text(text = "Whisper 모델", style = MaterialTheme.typography.titleSmall)
+    ModelPicker(
+        kind = ModelKind.WHISPER,
+        selected = selectedModel,
+        emptyHint = "ggml-….bin 파일을 휴대폰에 받은 뒤 가져오세요.",
+        onSelect = { settings.setWhisperModel(it) },
+    )
     if (!WhisperNative.loaded) {
         Text(
             text = "Whisper 엔진이 아직 빌드에 포함되지 않았습니다.",

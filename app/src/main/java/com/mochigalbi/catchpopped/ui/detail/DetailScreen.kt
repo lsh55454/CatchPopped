@@ -36,6 +36,7 @@ import com.mochigalbi.catchpopped.data.IdeaRepository
 import com.mochigalbi.catchpopped.data.IdeaStatus
 import com.mochigalbi.catchpopped.llm.Prompts
 import com.mochigalbi.catchpopped.pipeline.IdeaProcessor
+import com.mochigalbi.catchpopped.settings.AppSettings
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -60,7 +61,9 @@ fun DetailScreen(id: Long, onBack: () -> Unit) {
         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     }
     val formatter = remember { SimpleDateFormat("yyyy년 M월 d일 HH:mm", Locale.KOREAN) }
-    var document by remember(idea.id) { mutableStateOf(idea.documentMd.orEmpty()) }
+    // Reset when a new document is generated or saved.
+    var document by remember(idea.id, idea.documentMd) { mutableStateOf(idea.documentMd.orEmpty()) }
+    val llmModel by remember { AppSettings.get(context) }.llmModel.collectAsState()
     var confirmDelete by remember { mutableStateOf(false) }
 
     // One player at a time; released when leaving the screen.
@@ -113,7 +116,7 @@ fun DetailScreen(id: Long, onBack: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(4.dp))
         when {
-            processing -> Text(
+            processing && idea.transcript.isEmpty() -> Text(
                 text = "받아쓰는 중입니다…",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -180,8 +183,31 @@ fun DetailScreen(id: Long, onBack: () -> Unit) {
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-        Text(text = "문서", style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = if (idea.documentSource != null) "문서 (${idea.documentSource})" else "문서",
+            style = MaterialTheme.typography.titleMedium,
+        )
         Spacer(modifier = Modifier.height(4.dp))
+        if (processing && idea.transcript.isNotEmpty()) {
+            Text(
+                text = "처리 중입니다…",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Button(
+            enabled = !processing && idea.transcript.isNotBlank() && llmModel != null,
+            onClick = { processor.document(idea.id) },
+        ) {
+            Text(if (idea.documentMd == null) "문서 만들기" else "문서 다시 만들기")
+        }
+        if (llmModel == null) {
+            Text(
+                text = "설정에서 문서 생성 모델을 고르면 사용할 수 있습니다.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = document,
             onValueChange = { document = it },
@@ -204,7 +230,12 @@ fun DetailScreen(id: Long, onBack: () -> Unit) {
             }
             Button(
                 enabled = document != idea.documentMd.orEmpty(),
-                onClick = { repository.update(idea.copy(documentMd = document.ifBlank { null })) },
+                // A hand-edited or pasted document no longer matches the model label.
+                onClick = {
+                    repository.update(
+                        idea.copy(documentMd = document.ifBlank { null }, documentSource = null)
+                    )
+                },
             ) {
                 Text("저장")
             }

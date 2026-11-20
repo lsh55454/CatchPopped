@@ -14,8 +14,10 @@ data class Idea(
     val cleanAudioPath: String? = null,
     val status: IdeaStatus = IdeaStatus.DONE,
     val error: String? = null,
-    /** Which audio the current transcript came from: "원본" or "디노이즈". */
+    /** How the current transcript was made: engine · input audio · time taken. */
     val transcriptSource: String? = null,
+    /** How the current document was made: model · time taken. Null if pasted or edited. */
+    val documentSource: String? = null,
 ) {
     /** Document heading if there is one, otherwise the start of the transcript. */
     val title: String

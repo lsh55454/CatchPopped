@@ -1,4 +1,4 @@
-package com.mochigalbi.catchpopped.stt
+package com.mochigalbi.catchpopped.models
 
 import android.content.Context
 import android.net.Uri
@@ -9,27 +9,34 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 
-/** Whisper model files (ggml `.bin`) kept in the app's private storage. */
-object WhisperModels {
+/** Kinds of model files the app can import, by file extension. */
+enum class ModelKind(val extension: String, val description: String) {
+    WHISPER(".bin", "whisper.cpp 모델(.bin)"),
+    LLM(".task", "MediaPipe LLM 모델(.task)"),
+}
+
+/** Model files kept in the app's private storage (`files/models`). */
+object ModelFiles {
 
     fun dir(context: Context): File = File(context.filesDir, "models").apply { mkdirs() }
 
-    fun list(context: Context): List<File> =
-        dir(context).listFiles { file -> file.isFile && file.name.endsWith(".bin") }
+    fun list(context: Context, kind: ModelKind): List<File> =
+        dir(context).listFiles { file -> file.isFile && file.name.endsWith(kind.extension) }
             ?.sortedBy { it.name }
             ?: emptyList()
 
-    /** Short name for labels: `ggml-small.bin` → `small`. */
-    fun label(name: String): String = name.removePrefix("ggml-").removeSuffix(".bin")
+    /** Short name for labels: `ggml-small.bin` → `small`, `gemma3-1b-it-int4.task` → `gemma3-1b-it-int4`. */
+    fun label(name: String): String =
+        name.removePrefix("ggml-").substringBeforeLast('.')
 
     /** Copies a model picked by the user into app storage. [onProgress] gets copied bytes. */
-    suspend fun import(context: Context, uri: Uri, onProgress: (Long) -> Unit): File =
+    suspend fun import(context: Context, uri: Uri, kind: ModelKind, onProgress: (Long) -> Unit): File =
         withContext(Dispatchers.IO) {
             val resolver = context.contentResolver
             val name = resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
                 ?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
                 ?: throw IOException("파일 이름을 읽지 못했습니다.")
-            if (!name.endsWith(".bin")) throw IOException("whisper.cpp 모델(.bin)이 아닙니다: $name")
+            if (!name.endsWith(kind.extension)) throw IOException("${kind.description}이 아닙니다: $name")
 
             val safeName = name.replace(Regex("[^A-Za-z0-9._-]"), "_")
             val target = File(dir(context), safeName)

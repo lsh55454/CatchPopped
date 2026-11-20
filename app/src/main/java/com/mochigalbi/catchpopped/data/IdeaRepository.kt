@@ -66,6 +66,7 @@ class IdeaRepository private constructor(private val file: File) {
                     status = if (interrupted) IdeaStatus.FAILED else status,
                     error = if (interrupted) "처리가 중단됐습니다. 다시 받아쓰기를 눌러 주세요." else item.stringOrNull("error"),
                     transcriptSource = item.stringOrNull("transcriptSource"),
+                    documentSource = item.stringOrNull("documentSource"),
                 )
             }
         } catch (e: Exception) {
@@ -90,6 +91,7 @@ class IdeaRepository private constructor(private val file: File) {
                     .put("status", idea.status.name)
                     .put("error", idea.error ?: JSONObject.NULL)
                     .put("transcriptSource", idea.transcriptSource ?: JSONObject.NULL)
+                    .put("documentSource", idea.documentSource ?: JSONObject.NULL)
             )
         }
         // Write to a temp file first so a crash mid-write cannot corrupt the real file.

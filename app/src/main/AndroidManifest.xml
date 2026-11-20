@@ -3,6 +3,12 @@
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!-- Transcription keeps running in the background (ProcessingService). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <!-- Needed on Android 11+ to find the system speech recognition service. -->
     <queries>
         <intent>
@@ -27,6 +33,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".pipeline.ProcessingService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
     </application>
 
 </manifest>

@@ -25,7 +25,19 @@ class AppSettings private constructor(private val prefs: SharedPreferences) {
     )
     val sttEngine: StateFlow<SttEngine> = _sttEngine.asStateFlow()
 
-    /** File name of the selected model in [com.mochigalbi.catchpopped.stt.WhisperModels]. */
+    /**
+     * File name of the selected LLM in [com.mochigalbi.catchpopped.models.ModelFiles].
+     * When set, a document is written automatically after each transcription.
+     */
+    private val _llmModel = MutableStateFlow(prefs.getString(KEY_LLM_MODEL, null))
+    val llmModel: StateFlow<String?> = _llmModel.asStateFlow()
+
+    fun setLlmModel(name: String?) {
+        prefs.edit().putString(KEY_LLM_MODEL, name).apply()
+        _llmModel.value = name
+    }
+
+    /** File name of the selected model in [com.mochigalbi.catchpopped.models.ModelFiles]. */
     private val _whisperModel = MutableStateFlow(prefs.getString(KEY_WHISPER_MODEL, null))
     val whisperModel: StateFlow<String?> = _whisperModel.asStateFlow()
 
@@ -73,6 +85,7 @@ class AppSettings private constructor(private val prefs: SharedPreferences) {
         private const val KEY_STT_ENGINE = "stt_engine"
         private const val KEY_WHISPER_MODEL = "whisper_model"
         private const val KEY_WHISPER_LANGUAGE = "whisper_language"
+        private const val KEY_LLM_MODEL = "llm_model"
 
         @Volatile
         private var instance: AppSettings? = null
