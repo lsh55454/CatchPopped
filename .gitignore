@@ -24,6 +24,7 @@ docs/Private/
 *.gguf
 *.tflite
 *.litertlm
+ggml-*.bin
 models/
 
 # Android / Gradle build

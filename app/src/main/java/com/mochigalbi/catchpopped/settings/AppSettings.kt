@@ -14,7 +14,39 @@ enum class RecordMode {
     FILE,
 }
 
+/** Speech recognition engine for file recordings. */
+enum class SttEngine { SYSTEM, WHISPER }
+
 class AppSettings private constructor(private val prefs: SharedPreferences) {
+
+    private val _sttEngine = MutableStateFlow(
+        runCatching { SttEngine.valueOf(prefs.getString(KEY_STT_ENGINE, null) ?: "") }
+            .getOrDefault(SttEngine.SYSTEM)
+    )
+    val sttEngine: StateFlow<SttEngine> = _sttEngine.asStateFlow()
+
+    /** File name of the selected model in [com.mochigalbi.catchpopped.stt.WhisperModels]. */
+    private val _whisperModel = MutableStateFlow(prefs.getString(KEY_WHISPER_MODEL, null))
+    val whisperModel: StateFlow<String?> = _whisperModel.asStateFlow()
+
+    /** "ko" or "auto". */
+    private val _whisperLanguage = MutableStateFlow(prefs.getString(KEY_WHISPER_LANGUAGE, null) ?: "ko")
+    val whisperLanguage: StateFlow<String> = _whisperLanguage.asStateFlow()
+
+    fun setSttEngine(engine: SttEngine) {
+        prefs.edit().putString(KEY_STT_ENGINE, engine.name).apply()
+        _sttEngine.value = engine
+    }
+
+    fun setWhisperModel(name: String?) {
+        prefs.edit().putString(KEY_WHISPER_MODEL, name).apply()
+        _whisperModel.value = name
+    }
+
+    fun setWhisperLanguage(language: String) {
+        prefs.edit().putString(KEY_WHISPER_LANGUAGE, language).apply()
+        _whisperLanguage.value = language
+    }
 
     private val _recordMode = MutableStateFlow(
         runCatching { RecordMode.valueOf(prefs.getString(KEY_RECORD_MODE, null) ?: "") }
@@ -38,6 +70,9 @@ class AppSettings private constructor(private val prefs: SharedPreferences) {
     companion object {
         private const val KEY_RECORD_MODE = "record_mode"
         private const val KEY_DENOISE = "denoise"
+        private const val KEY_STT_ENGINE = "stt_engine"
+        private const val KEY_WHISPER_MODEL = "whisper_model"
+        private const val KEY_WHISPER_LANGUAGE = "whisper_language"
 
         @Volatile
         private var instance: AppSettings? = null
